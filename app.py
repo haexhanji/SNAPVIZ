@@ -3,7 +3,7 @@ import google.generativeai as genai
 
 # 🔐 Gemini API 키 설정
 genai.configure(api_key="YOUR_API_KEY")
-model = genai.GenerativeModel(model_name="models/gemini-1.5-pro")
+model = genai.GenerativeModel(model_name="gemini-1.5-pro")
 
 # ✅ 페이지 설정
 st.set_page_config(
@@ -22,7 +22,7 @@ def generate_meditation(verse_text):
 
 [기도문]
 """
-    response = model.generate_content([prompt])
+    response = model.generate_content(prompt)
     return response.text
 
 # ✅ 주제어 기반 구절 추천 함수
@@ -35,7 +35,7 @@ def ai_recommend_verses(keyword):
 [책 이름] [장]:[절]
 "본문"
 """
-    response = model.generate_content([prompt])
+    response = model.generate_content(prompt)
     return response.text
 
 # ✅ 앱 타이틀
