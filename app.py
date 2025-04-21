@@ -22,7 +22,7 @@ def generate_meditation(verse_text):
 
 [기도문]
 """
-    response = model.generate_content(prompt)
+    response = model.generate_content([prompt])
     return response.text
 
 # ✅ 주제어 기반 구절 추천 함수
@@ -35,7 +35,7 @@ def ai_recommend_verses(keyword):
 [책 이름] [장]:[절]
 "본문"
 """
-    response = model.generate_content(prompt)
+    response = model.generate_content([prompt])
     return response.text
 
 # ✅ 앱 타이틀
