@@ -40,18 +40,17 @@ with st.sidebar:
     if new_menu != st.session_state.current_menu:
         if st.session_state.is_thinking:
             st.session_state.pending_menu = new_menu
-            with st.modal("⚠️ 정말 나가시겠어요?"):
-                st.write("AI가 현재 분석 중이에요. 이 화면을 벗어나면 분석이 중단될 수 있습니다.")
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button("네, 나갈래요"):
-                        st.session_state.is_thinking = False
-                        st.session_state.current_menu = st.session_state.pending_menu
-                        st.rerun()
-                with col2:
-                    if st.button("아니요, 계속 있을래요"):
-                        st.session_state.pending_menu = None
-                        st.rerun()
+            st.warning("⚠️ AI가 분석 중입니다. 이 화면을 나가시겠어요?")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("네, 나갈래요"):
+                    st.session_state.is_thinking = False
+                    st.session_state.current_menu = st.session_state.pending_menu
+                    st.rerun()
+            with col2:
+                if st.button("아니요, 계속 있을래요"):
+                    st.session_state.pending_menu = None
+                    st.rerun()
         else:
             st.session_state.current_menu = new_menu
 
