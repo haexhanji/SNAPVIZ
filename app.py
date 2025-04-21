@@ -1,14 +1,18 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 페이지 설정
-st.set_page_config(page_title="SNAPVIZ", layout="wide")
+# ✅ 페이지 설정 + 사이드바 항상 열림
+st.set_page_config(
+    page_title="SNAPVIZ",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # 🔐 Gemini API 연결
 genai.configure(api_key="AIzaSyDX_xmE8icIKQDURcDxe4136lHE8M4yvrI")
 model = genai.GenerativeModel(model_name="models/gemini-1.5-pro")
 
-# 💡 사이드 메뉴 UI 개선
+# 💡 사이드 메뉴 UI
 with st.sidebar:
     st.markdown("## 🎛️ SNAPVIZ 기능 선택")
     menu = st.radio(
@@ -70,7 +74,7 @@ if menu == "🎬 시나리오 분석":
                     st.markdown(output)
                     st.session_state.chat_history.append({"role": "assistant", "content": output})
 
-# ✅ 로케이션 추천 (UI만 구성됨)
+# ✅ 로케이션 추천 기능 (UI만 구성)
 elif menu == "🗺️ 로케이션 추천":
     st.title("🗺️ SNAPVIZ 로케이션 추천")
     st.subheader("2️⃣ 장면 키워드 기반 추천 장소 찾기 (기능 개발 예정)")
