@@ -1,6 +1,5 @@
 import streamlit as st
 import google.generativeai as genai
-import json
 
 # 🔐 Gemini API 키 설정
 genai.configure(api_key="YOUR_API_KEY")
@@ -13,55 +12,54 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ✅ 성경 데이터 로딩 함수
-@st.cache_data
-def load_bible():
-    with open("bible_db.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
-# ✅ 검색 함수
-def search_verses(keyword):
-    return [v for v in bible_data if keyword in v["text"]][:3]
-
 # ✅ 묵상 생성 함수
-def generate_meditation(verse):
+def generate_meditation(verse_text):
     prompt = f"""
 너는 천주교 영성가야. 아래 성경 구절에 대해 묵상 기도문을 작성해줘. 고요하고 은혜로운 말투로 써줘.
 
 [성경 구절]
-{verse['book']} {verse['chapter']}장 {verse['verse']}절
-"{verse['text']}"
+{verse_text}
 
 [기도문]
 """
     response = model.generate_content(prompt)
     return response.text
 
-# ✅ 성경 데이터 로딩
-try:
-    bible_data = load_bible()
-except FileNotFoundError:
-    st.error("❗ bible_db.json 파일이 없습니다. 업로드해주세요.")
-    st.stop()
+# ✅ 주제어 기반 구절 추천 함수
+def ai_recommend_verses(keyword):
+    prompt = f"""
+너는 천주교 성경 전문가야. '{keyword}'라는 주제와 관련된 대표적인 성경 구절 3개를 추천해줘.
+
+각 구절은 다음 형식으로 정리해줘:
+
+[책 이름] [장]:[절]
+"본문"
+"""
+    response = model.generate_content(prompt)
+    return response.text
 
 # ✅ 앱 타이틀
 st.title("🙏 Ora.AI - 천주교 기반 성경 묵상")
-st.subheader("주제어로 말씀을 검색하고, 은혜로운 묵상을 받아보세요")
+st.subheader("주제어로 관련 말씀을 추천받고, 묵상 기도문을 생성하세요")
 
 # ✅ 키워드 입력
 keyword = st.text_input("🔍 주제어를 입력하세요 (예: 사랑, 고통, 희망 등)")
 if keyword:
-    results = search_verses(keyword)
-    if results:
-        for verse in results:
-            st.markdown(f"📖 **{verse['book']} {verse['chapter']}:{verse['verse']}**")
-            st.markdown(f"> {verse['text']}")
+    with st.spinner("Ora.AI가 성경 구절을 찾는 중..."):
+        verses_text = ai_recommend_verses(keyword)
+        st.markdown("🕯️ **추천 성경 구절**")
+        st.markdown(verses_text)
 
-            if st.button("🧎‍♂️ 이 말씀으로 묵상하기", key=verse["book"]+str(verse["verse"])):
-                with st.chat_message("assistant"):
-                    with st.spinner("Ora.AI가 묵상 기도 중..."):
-                        meditation = generate_meditation(verse)
-                        st.markdown("🕊️ **묵상 기도문**")
-                        st.markdown(meditation)
-    else:
-        st.warning("관련 성경 구절을 찾을 수 없습니다. 다른 단어를 입력해보세요.")
+        if st.button("🧎 묵상 기도문 생성하기"):
+            with st.chat_message("assistant"):
+                with st.spinner("Ora.AI가 묵상 기도 중..."):
+                    meditation = generate_meditation(verses_text)
+                    st.markdown("🕊️ **묵상 기도문**")
+                    st.markdown(meditation)
+
+                    st.download_button(
+                        label="📥 묵상 기도문 저장하기",
+                        data=meditation,
+                        file_name="meditation.txt",
+                        mime="text/plain"
+                    )
