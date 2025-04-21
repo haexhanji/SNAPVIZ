@@ -23,6 +23,8 @@ if "current_menu" not in st.session_state:
     st.session_state.current_menu = "🎬 시나리오 분석"
 if "pending_menu" not in st.session_state:
     st.session_state.pending_menu = None
+if "cancel_navigation" not in st.session_state:
+    st.session_state.cancel_navigation = False
 
 # ✅ 사이드 메뉴
 with st.sidebar:
@@ -40,18 +42,22 @@ with st.sidebar:
     if new_menu != st.session_state.current_menu:
         if st.session_state.is_thinking:
             st.session_state.pending_menu = new_menu
+            st.session_state.cancel_navigation = True
             st.warning("⚠️ AI가 분석 중입니다. 이 화면을 나가시겠어요?")
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("네, 나갈래요"):
                     st.session_state.is_thinking = False
                     st.session_state.current_menu = st.session_state.pending_menu
+                    st.session_state.pending_menu = None
+                    st.session_state.cancel_navigation = False
                     st.rerun()
             with col2:
                 if st.button("아니요, 계속 있을래요"):
                     st.session_state.pending_menu = None
+                    st.session_state.cancel_navigation = False
                     st.rerun()
-        else:
+        elif not st.session_state.cancel_navigation:
             st.session_state.current_menu = new_menu
 
 # ✅ 시나리오 분석 기능
