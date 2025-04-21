@@ -1,7 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 
-# ✅ 페이지 설정 + 사이드바 항상 열림
+# ✅ 페이지 설정
 st.set_page_config(
     page_title="SNAPVIZ",
     layout="wide",
@@ -21,15 +21,10 @@ if "is_thinking" not in st.session_state:
     st.session_state.is_thinking = False
 if "current_menu" not in st.session_state:
     st.session_state.current_menu = "🎬 시나리오 분석"
-if "pending_menu" not in st.session_state:
-    st.session_state.pending_menu = None
-if "cancel_navigation" not in st.session_state:
-    st.session_state.cancel_navigation = False
 
-# ✅ 사이드 메뉴 (선택값 별도 저장)
+# ✅ 사이드 메뉴
 with st.sidebar:
     st.markdown("## 🎛️ SNAPVIZ 기능 선택")
-
     selected_menu = st.radio(
         label="기능 선택",
         options=["🎬 시나리오 분석", "🗺️ 로케이션 추천"],
@@ -37,34 +32,11 @@ with st.sidebar:
         key="menu_selector",
         label_visibility="collapsed"
     )
-
     st.markdown("---")
     st.caption("© 2025 SNAPVIZ Studio")
 
-    # 메뉴 전환 시도 → 분석 중이면 보류
-    if selected_menu != st.session_state.current_menu:
-        if st.session_state.is_thinking:
-            st.session_state.pending_menu = selected_menu
-            st.session_state.cancel_navigation = True
-        else:
-            st.session_state.current_menu = selected_menu
-
-# ✅ 분석 중인데 메뉴 전환 시도한 경우 경고창 표시
-if st.session_state.cancel_navigation and st.session_state.pending_menu:
-    st.warning("⚠️ AI가 분석 중입니다. 이 화면을 나가시겠어요?")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("네, 나갈래요"):
-            st.session_state.is_thinking = False
-            st.session_state.current_menu = st.session_state.pending_menu
-            st.session_state.pending_menu = None
-            st.session_state.cancel_navigation = False
-            st.rerun()
-    with col2:
-        if st.button("아니요, 계속 있을래요"):
-            st.session_state.pending_menu = None
-            st.session_state.cancel_navigation = False
-            st.rerun()
+    # 메뉴 전환 즉시 반영
+    st.session_state.current_menu = selected_menu
 
 # ✅ 시나리오 분석 기능
 if st.session_state.current_menu == "🎬 시나리오 분석":
@@ -112,7 +84,7 @@ if st.session_state.current_menu == "🎬 시나리오 분석":
                     st.session_state.chat_history.append({"role": "assistant", "content": output})
                     st.session_state.is_thinking = False
 
-# ✅ 로케이션 추천 기능 (UI만 구성)
+# ✅ 로케이션 추천 기능
 elif st.session_state.current_menu == "🗺️ 로케이션 추천":
     st.title("🗺️ SNAPVIZ 로케이션 추천")
     st.subheader("2️⃣ 장면 키워드 기반 추천 장소 찾기 (기능 개발 예정)")
