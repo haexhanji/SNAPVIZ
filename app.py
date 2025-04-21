@@ -26,39 +26,45 @@ if "pending_menu" not in st.session_state:
 if "cancel_navigation" not in st.session_state:
     st.session_state.cancel_navigation = False
 
-# ✅ 사이드 메뉴
+# ✅ 사이드 메뉴 (선택값 별도 저장)
 with st.sidebar:
     st.markdown("## 🎛️ SNAPVIZ 기능 선택")
-    new_menu = st.radio(
+
+    selected_menu = st.radio(
         label="기능 선택",
         options=["🎬 시나리오 분석", "🗺️ 로케이션 추천"],
         index=["🎬 시나리오 분석", "🗺️ 로케이션 추천"].index(st.session_state.current_menu),
+        key="menu_selector",
         label_visibility="collapsed"
     )
+
     st.markdown("---")
     st.caption("© 2025 SNAPVIZ Studio")
 
-    # 메뉴 전환 시도
-    if new_menu != st.session_state.current_menu:
+    # 메뉴 전환 시도 → 분석 중이면 보류
+    if selected_menu != st.session_state.current_menu:
         if st.session_state.is_thinking:
-            st.session_state.pending_menu = new_menu
+            st.session_state.pending_menu = selected_menu
             st.session_state.cancel_navigation = True
-            st.warning("⚠️ AI가 분석 중입니다. 이 화면을 나가시겠어요?")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("네, 나갈래요"):
-                    st.session_state.is_thinking = False
-                    st.session_state.current_menu = st.session_state.pending_menu
-                    st.session_state.pending_menu = None
-                    st.session_state.cancel_navigation = False
-                    st.rerun()
-            with col2:
-                if st.button("아니요, 계속 있을래요"):
-                    st.session_state.pending_menu = None
-                    st.session_state.cancel_navigation = False
-                    st.rerun()
-        elif not st.session_state.cancel_navigation:
-            st.session_state.current_menu = new_menu
+        else:
+            st.session_state.current_menu = selected_menu
+
+# ✅ 분석 중인데 메뉴 전환 시도한 경우 경고창 표시
+if st.session_state.cancel_navigation and st.session_state.pending_menu:
+    st.warning("⚠️ AI가 분석 중입니다. 이 화면을 나가시겠어요?")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("네, 나갈래요"):
+            st.session_state.is_thinking = False
+            st.session_state.current_menu = st.session_state.pending_menu
+            st.session_state.pending_menu = None
+            st.session_state.cancel_navigation = False
+            st.rerun()
+    with col2:
+        if st.button("아니요, 계속 있을래요"):
+            st.session_state.pending_menu = None
+            st.session_state.cancel_navigation = False
+            st.rerun()
 
 # ✅ 시나리오 분석 기능
 if st.session_state.current_menu == "🎬 시나리오 분석":
