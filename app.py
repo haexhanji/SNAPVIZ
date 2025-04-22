@@ -1,95 +1,82 @@
 import streamlit as st
 import google.generativeai as genai
-import json
 
 # ✅ 페이지 설정
-st.set_page_config(
-    page_title="Ora.AI - 가톨릭 기도 도우미",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="Ora.AI - 가톨릭 AI 동반자", layout="wide")
 
-# 🔐 Gemini API 키
+# 🔐 Gemini API 키 설정
 genai.configure(api_key="AIzaSyC5VbRN66OLvUzNtbicw4KwtIUWdK08lLA")
-model = genai.GenerativeModel(model_name="models/gemini-1.5-pro")
+model = genai.GenerativeModel("models/gemini-1.5-pro")
 
-# ✅ 성경 데이터 로드
-@st.cache_data
-def load_bible():
-    with open("bible_db.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
-bible_data = load_bible()
-
-# ✅ 메뉴 고정
-st.markdown(
-    """
-    <style>
-    div[data-testid="stHeader"] {
-        position: sticky;
-        top: 0;
-        z-index: 999;
-        background-color: white;
-        border-bottom: 1px solid #eaeaea;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+# ✅ 메뉴 구성
+menu = st.selectbox(
+    "📌 메뉴 선택",
+    ["🏠 홈", "🙏 묵상 기도문", "📅 전례력 캘린더", "💬 성인 챗봇", "👤 마이페이지"],
+    key="main_menu",
+    index=0,
 )
 
-# ✅ 상단 메뉴
-menu = st.radio(
-    "메뉴",
-    ["🏠 홈", "📖 전례력 캘린더", "🕯️ 묵상기도문", "🤖 챗봇대화", "👤 마이페이지"],
-    horizontal=True,
-    label_visibility="collapsed",
-    key="main_menu"
-)
+st.markdown("---")
 
-# ✅ 홈
+# 🏠 홈
 if menu == "🏠 홈":
-    st.title("🏠 Ora.AI")
-    st.markdown("신앙 여정을 함께하는 AI 동반자 💒")
+    st.title("🙏 Ora.AI")
+    st.subheader("기도하고 묵상하는 AI 동반자")
+    st.markdown("가톨릭 정신에 따라 당신의 신앙 여정을 돕는 앱입니다.")
 
-# ✅ 묵상 기도문
-elif menu == "🕯️ 묵상기도문":
-    st.title("🕯️ 감정 기반 묵상 기도문 추천")
-    keyword = st.text_input("당신의 감정이나 상황을 입력해보세요 🙏", placeholder="ex. 외로움, 감사, 시험, 희망")
+# 🙏 묵상 기도문
+elif menu == "🙏 묵상 기도문":
+    st.title("🙏 묵상 기도문 생성")
+    keyword = st.text_input("📝 묵상하고 싶은 주제 (예: 용서, 감사, 고통, 희망 등)")
 
-    def ai_recommend_verses(keyword):
-        prompt = f"""너는 가톨릭 신학에 밝은 AI야. '{keyword}'라는 감정이나 상황에 적절한 성경 구절 3개를 한국어로 추천해줘.
-구절은 다음 포맷을 따라:
+    def ai_recommend_verses(prompt):
+        full_prompt = f"""
+        너는 가톨릭 신자에게 깊은 위로가 되는 성경 구절을 추천하는 AI야.
+        주어진 키워드에 어울리는 성경 말씀 3~5개를 뽑아서, 구절과 출처를 함께 알려줘.
+        구절은 천주교 성경 번역본을 기준으로 해줘.
 
-1. [책 이름] [장]:[절] - [내용]
-2. ...
-3. ...
+        [키워드]
+        {prompt}
 
-반드시 이 형식을 지켜줘."""
-        response = model.generate_content(prompt)
+        [응답 예시]
+        1. "구절 내용" - (책 이름 장:절)
+        ...
+        """
+        response = model.generate_content(full_prompt)
         return response.text
 
-    if st.button("기도문 추천 받기") and keyword:
-        with st.spinner("기도문을 준비 중입니다..."):
-            verses_text = ai_recommend_verses(keyword)
-            st.markdown(verses_text)
-            st.download_button(
-                label="📝 묵상 텍스트 다운로드",
-                data=verses_text,
-                file_name="meditation.txt",
-                mime="text/plain"
-            )
+    if st.button("📖 성경 구절 추천받기"):
+        with st.spinner("묵상할 말씀을 찾는 중입니다..."):
+            verses = ai_recommend_verses(keyword)
+            st.markdown(verses)
 
-# ✅ 전례력 캘린더
-elif menu == "📖 전례력 캘린더":
-    st.title("📖 전례력 기반 캘린더")
-    st.info("전례력 캘린더는 추후 업데이트 예정입니다.")
+# 📅 전례력 캘린더 (기능 예정)
+elif menu == "📅 전례력 캘린더":
+    st.title("📅 전례력 기반 안내")
+    st.info("전례력 캘린더 기능은 추후 업데이트될 예정입니다.")
 
-# ✅ 챗봇 대화
-elif menu == "🤖 챗봇대화":
-    st.title("🤖 Ora.AI 챗봇")
-    st.info("성인 챗봇 및 교리 Q&A 기능은 추후 추가될 예정입니다.")
+# 💬 성인 챗봇
+elif menu == "💬 성인 챗봇":
+    st.title("💬 성인 챗봇과 대화하기")
 
-# ✅ 마이페이지
+    saint = st.selectbox("👼 대화할 성인을 선택하세요", ["성 프란치스코", "성녀 데레사", "성 아우구스티누스"])
+    user_question = st.text_input("✉️ 질문을 입력하세요")
+
+    if user_question:
+        with st.spinner("성인께 여쭤보는 중입니다..."):
+            prompt = f"""
+            너는 {saint}야. 지금 너에게 가톨릭 신자가 질문을 하고 있어.
+            {saint} 특유의 말투와 가치관, 영성에 맞춰 답변해줘. 신앙적인 위로와 조언이 되도록 해.
+
+            [질문]
+            {user_question}
+
+            [답변]
+            """
+            response = model.generate_content(prompt)
+            st.markdown(response.text)
+
+# 👤 마이페이지
 elif menu == "👤 마이페이지":
     st.title("👤 마이페이지")
-    st.info("회원 기능은 추후 도입될 예정입니다.")
+    st.info("사용자 정보, 저장된 기도문 등은 여기에 표시될 예정입니다.")
