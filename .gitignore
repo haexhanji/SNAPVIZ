@@ -1,2 +1,4 @@
+# 🔥 Google Cloud SDK 관련 대용량 파일 무시
 google-cloud-sdk/
-google-cloud-sdk*
+google-cloud-sdk-*.tar.gz
+snapviz_bigfiles.zip
